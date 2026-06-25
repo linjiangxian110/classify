@@ -1,0 +1,25 @@
+# 忽略训练数据目录
+train/
+
+# 如果 train.zip 也不想传，顺手一起忽略
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter
+.ipynb_checkpoints/
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# 常见模型权重和日志（可按需保留）
+*.pth
+*.pt
+logs/
+outputs/
+checkpoints/
