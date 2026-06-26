@@ -12,6 +12,13 @@ from config import (
 )
 
 
+def _set_drop_path(model, drop_rate):
+    """遍历 ViT blocks，设置 stochastic depth 概率"""
+    for module in model.modules():
+        if hasattr(module, "sample_drop_ratio"):
+            module.sample_drop_ratio = drop_rate
+
+
 class GeMPool(nn.Module):
     """Generalized Mean Pooling (p=3)"""
     def __init__(self, p=3, eps=1e-6):
@@ -35,8 +42,10 @@ class DINOv3Classifier(nn.Module):
         # ── Backbone ──
         self.backbone = dinov3_vitb16(
             pretrained=False,   # 我们手动加载权重
-            drop_path_rate=drop_path_rate,
         )
+        # DropPath 在 dinov3_vitb16 内部硬编码为 0.0，需后设
+        if drop_path_rate > 0:
+            _set_drop_path(self.backbone, drop_path_rate)
         if pretrained_path:
             print(f"[Model] 加载预训练权重: {pretrained_path}")
             state = torch.load(pretrained_path, map_location="cpu")
