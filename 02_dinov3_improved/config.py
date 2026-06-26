@@ -9,7 +9,7 @@ import torch
 # 路径
 # ============================================================
 DATA_DIR = "/mnt/data/lck/code/classify/train"
-PRETRAIN_PATH = "/mnt/data/lck/code/classify/dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth"
+PRETRAIN_PATH = "/mnt/data/lck/code/classify/finetuned_model_a100_full.pt"
 EXP_NAME = os.environ.get("WEATHER_EXP_NAME", "default")
 CHECKPOINT_DIR = f"./checkpoints/{EXP_NAME}"
 RESULT_DIR = f"./results/{EXP_NAME}"
@@ -33,13 +33,14 @@ HIDDEN_DIM = 2 * EMBED_DIM          # CLS + GeM concat → 1536
 # 训练
 # ============================================================
 BATCH_SIZE = 16                      # ViT + 384px 显存占用大
-EPOCHS = 20
-LR = 1e-3                           # 先回到标准 LR，不加改动时不需要保守
+EPOCHS = 50
+LR = 1e-3
 LR_MIN = 1e-6
-WEIGHT_DECAY = 0.05                 # ViT 需要更强的 weight decay
+WEIGHT_DECAY = 0.05
 WARMUP_EPOCHS = 2
 VAL_RATIO = float(os.environ.get("WEATHER_VAL_RATIO", "0.15"))
 SEED = 42
+EARLY_STOP_PATIENCE = 15            # 50 epoch 放宽早停
 
 # ============================================================
 # 改进：正则化

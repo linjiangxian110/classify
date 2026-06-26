@@ -18,8 +18,8 @@ if _DINOV3 not in sys.path:
 from config import *
 from model import DINOv3Classifier, EMAModel
 from dataset import (
-    build_loaders, compute_class_weights,
-    mixup_data, mixup_criterion, get_val_transforms,
+    build_loaders, mixup_data, mixup_criterion,
+    get_val_transforms,
 )
 from sklearn.metrics import f1_score
 
@@ -136,13 +136,9 @@ def train():
     ema = EMAModel(model, decay=EMA_DECAY) if EMA_DECAY > 0 else None
 
     # ── Loss ──
-    class_weights = compute_class_weights().to(DEVICE)
-    criterion = nn.CrossEntropyLoss(
-        weight=class_weights,
-        label_smoothing=LABEL_SMOOTHING,
-    )
+    criterion = nn.CrossEntropyLoss()
 
-    # ── 优化器 + AMP + 调度器 ──
+    # ── 优化器 + 调度器 ──
     optimizer = optim.AdamW(
         model.parameters(),
         lr=LR,
@@ -150,7 +146,7 @@ def train():
         eps=ADAMW_EPS,
         weight_decay=WEIGHT_DECAY,
     )
-    scaler = torch.amp.GradScaler("cuda") if DEVICE.type == "cuda" else None
+    scaler = None  # 不用 AMP，保持简单
     scheduler = optim.lr_scheduler.CosineAnnealingLR(
         optimizer, T_max=EPOCHS, eta_min=LR_MIN,
     )

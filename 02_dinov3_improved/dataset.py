@@ -15,10 +15,14 @@ from config import (
 
 
 def get_train_transforms():
-    """训练增强：Resize + RandomCrop + Flip（与原版一致，安全基线）"""
+    """
+    训练预处理 — 与原版推理完全一致，只加水平翻转
+    Resize(438) → CenterCrop(384) → HFlip → Normalize
+    """
     return v2.Compose([
         v2.ToImage(),
-        v2.RandomResizedCrop(IMG_SIZE, scale=(0.7, 1.0)),
+        v2.Resize(RESIZE_VAL, interpolation=v2.InterpolationMode.BICUBIC),
+        v2.CenterCrop(IMG_SIZE),
         v2.RandomHorizontalFlip(p=0.5),
         v2.ToDtype(torch.float32, scale=True),
         v2.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),

@@ -40,31 +40,36 @@ class DINOv3Classifier(nn.Module):
         super().__init__()
 
         # ── Backbone ──
-        self.backbone = dinov3_vitb16(
-            pretrained=False,   # 我们手动加载权重
-        )
-        # DropPath 在 dinov3_vitb16 内部硬编码为 0.0，需后设
+        self.backbone = dinov3_vitb16(pretrained=False)
         if drop_path_rate > 0:
             _set_drop_path(self.backbone, drop_path_rate)
-        if pretrained_path:
-            print(f"[Model] 加载预训练权重: {pretrained_path}")
-            state = torch.load(pretrained_path, map_location="cpu")
-            # dinov3_vitb16 预训练权重通常是完整 model state
-            if "backbone_state_dict" in state:
-                self.backbone.load_state_dict(state["backbone_state_dict"])
-            elif "teacher" in state:
-                self.backbone.load_state_dict(state["teacher"], strict=False)
-            else:
-                self.backbone.load_state_dict(state, strict=False)
 
-        # ── GeM Pooling ──
+        # ── GeM + 分类头 ──
         self.gem_pool = GeMPool()
-
-        # ── 分类头 ──
         self.classifier = nn.Sequential(
             nn.Dropout(DROPOUT),
             nn.Linear(HIDDEN_DIM, NUM_CLASSES),
         )
+
+        # ── 加载权重 ──
+        if pretrained_path:
+            print(f"[Model] 加载权重: {pretrained_path}")
+            state = torch.load(pretrained_path, map_location="cpu", weights_only=False)
+
+            # 微调过的 checkpoint（含 backbone + classifier）
+            if "backbone_state_dict" in state:
+                print("[Model] 检测到微调 checkoint → 加载 backbone + classifier")
+                self.backbone.load_state_dict(state["backbone_state_dict"])
+                self.classifier.load_state_dict(state["classifier_state_dict"])
+                if "gem_pool_state_dict" in state:
+                    self.gem_pool.load_state_dict(state["gem_pool_state_dict"])
+            # 纯预训练权重
+            elif "teacher" in state:
+                print("[Model] 检测到 teacher 格式 → 只加载 backbone")
+                self.backbone.load_state_dict(state["teacher"], strict=False)
+            else:
+                print("[Model] 检测到裸 state_dict → 只加载 backbone")
+                self.backbone.load_state_dict(state, strict=False)
 
         # ── 统计 ──
         total = sum(p.numel() for p in self.parameters())
