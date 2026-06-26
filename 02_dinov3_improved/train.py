@@ -241,7 +241,7 @@ def save_checkpoint(model, epoch, metrics, is_best=False):
         "gem_pool_state_dict": model.gem_pool.state_dict(),
         "macro_f1": metrics["val_macro_f1"],
     }
-    path = os.path.join(CHECKPOINT_DIR, "dinov3_best.pth")
+    path = os.path.join(CHECKPOINT_DIR, f"dinov3_{EXP_NAME}.pth")
     torch.save(ckpt, path)
     if is_best:
         print(f"[Save] {path}  (F1={metrics['val_macro_f1']:.4f})")
@@ -249,7 +249,7 @@ def save_checkpoint(model, epoch, metrics, is_best=False):
 
 def save_final(model, suffix=""):
     os.makedirs(RESULT_DIR, exist_ok=True)
-    name = f"finetuned_model{suffix}.pt"
+    name = f"dinov3_{EXP_NAME}{suffix}.pt"
     path = os.path.join(RESULT_DIR, name)
     ckpt = {
         "backbone_state_dict": model.backbone.state_dict(),

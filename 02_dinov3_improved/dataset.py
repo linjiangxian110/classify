@@ -15,12 +15,11 @@ from config import (
 
 
 def get_train_transforms():
-    """训练增强：RandAugment + 随机裁剪"""
+    """训练增强：Resize + RandomCrop + Flip（与原版一致，安全基线）"""
     return v2.Compose([
         v2.ToImage(),
         v2.RandomResizedCrop(IMG_SIZE, scale=(0.7, 1.0)),
         v2.RandomHorizontalFlip(p=0.5),
-        v2.RandAugment(num_ops=2, magnitude=5),  # 保守强度
         v2.ToDtype(torch.float32, scale=True),
         v2.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
     ])

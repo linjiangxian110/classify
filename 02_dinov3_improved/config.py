@@ -34,7 +34,7 @@ HIDDEN_DIM = 2 * EMBED_DIM          # CLS + GeM concat → 1536
 # ============================================================
 BATCH_SIZE = 16                      # ViT + 384px 显存占用大
 EPOCHS = 20
-LR = 3e-4                           # ViT 比 CNN 敏感，用更低 LR
+LR = 1e-3                           # 先回到标准 LR，不加改动时不需要保守
 LR_MIN = 1e-6
 WEIGHT_DECAY = 0.05                 # ViT 需要更强的 weight decay
 WARMUP_EPOCHS = 2
@@ -44,11 +44,11 @@ SEED = 42
 # ============================================================
 # 改进：正则化
 # ============================================================
-LABEL_SMOOTHING = 0.1               # 软标签，防止过拟合
+LABEL_SMOOTHING = 0.0               # 先关闭，后续逐步加
 DROPOUT = 0.2                       # 分类头 dropout
-DROP_PATH_RATE = 0.1                # 主干网络 stochastic depth
-MIXUP_ALPHA = 0.2                   # MixUp 强度（0 = 关闭）
-EMA_DECAY = 0.999                   # 指数移动平均（0 = 关闭）
+DROP_PATH_RATE = 0.0                # 先关闭，后续逐步加
+MIXUP_ALPHA = 0.0                   # 先关闭（天气分类对混合敏感）
+EMA_DECAY = 0.0                     # 先关闭
 
 # ============================================================
 # 图像预处理
