@@ -28,7 +28,7 @@ def _get_model():
         print(f"[Infer] 权重路径: {WEIGHT_PATH}")
         _model = create_model(MODEL_NAME, NUM_CLASSES, pretrained=False)
         _model.load_state_dict(
-            torch.load(WEIGHT_PATH, map_location="cpu")
+            torch.load(WEIGHT_PATH, map_location="cpu", weights_only=False)
         )
         _model.to(DEVICE)
         _model.eval()

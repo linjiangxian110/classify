@@ -188,7 +188,7 @@ def train():
     # ── 8. 加载最佳模型，画混淆矩阵 ──
     best_path = f"./checkpoints/{MODEL_NAME}_best.pth"
     if os.path.exists(best_path):
-        ckpt = torch.load(best_path, map_location=DEVICE)
+        ckpt = torch.load(best_path, map_location=DEVICE, weights_only=False)
         model.load_state_dict(ckpt["model_state_dict"])
         print(f"[Final] 已加载最佳模型: {best_path}")
 
