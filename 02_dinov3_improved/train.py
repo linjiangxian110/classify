@@ -111,7 +111,20 @@ def train():
     print(f"{'='*55}\n")
 
     # ── 数据 ──
-    train_loader, val_loader, class_names = build_loaders()
+    if VAL_RATIO <= 0:
+        # 全量训练，无验证集
+        print("[Data] 全量训练模式（VAL_RATIO=0）")
+        from torch.utils.data import DataLoader
+        from torchvision import datasets
+        from dataset import get_train_transforms
+        full_set = datasets.ImageFolder(DATA_DIR, transform=get_train_transforms())
+        train_loader = DataLoader(full_set, batch_size=BATCH_SIZE, shuffle=True,
+                                  num_workers=4, pin_memory=True)
+        val_loader = None
+        class_names = full_set.classes
+        print(f"[Data] 全量: {len(full_set)} 张")
+    else:
+        train_loader, val_loader, class_names = build_loaders()
 
     # ── 模型 ──
     model = DINOv3Classifier(
@@ -166,59 +179,53 @@ def train():
         if ema:
             ema.update()
 
-        # 验证
-        metrics = validate(model, val_loader, criterion)
-        val_f1 = metrics["val_macro_f1"]
-
-        is_best = val_f1 > best_f1
-        if is_best:
-            best_f1 = val_f1
+        # 验证（如果有验证集）
+        if val_loader is not None:
+            metrics = validate(model, val_loader, criterion)
+            val_f1 = metrics["val_macro_f1"]
+            is_best = val_f1 > best_f1
+            if is_best:
+                best_f1 = val_f1
+                best_epoch = epoch
+                no_improve = 0
+                save_checkpoint(model, epoch, metrics, is_best=True)
+            else:
+                no_improve += 1
+        else:
+            # 全量训练：只看 train_loss，每轮都存
+            val_f1 = 0.0
+            is_best = True
             best_epoch = epoch
             no_improve = 0
-            save_checkpoint(model, epoch, metrics, is_best=True)
-        else:
-            no_improve += 1
+            save_checkpoint(model, epoch, {"val_macro_f1": 0.0}, is_best=True)
 
         elapsed = time.time() - t0
+        tag = "val_f1" if val_loader else "full"
         print(
             f"Epoch {epoch:3d}/{EPOCHS} | "
             f"lr={current_lr:.2e} | "
             f"time={elapsed//60:02.0f}:{elapsed%60:02.0f} | "
             f"train_loss={train_loss:.4f} | "
-            f"val_f1={val_f1:.4f}"
+            f"{tag}={val_f1:.4f}"
             f"{' ★' if is_best else ''}"
-            f"  ({no_improve}/{EARLY_STOP_PATIENCE})"
         )
 
-        if epoch % 5 == 0 or is_best:
-            per_cls = f1_score(
-                metrics["y_true"], metrics["y_pred"], average=None,
-            )
-            parts = " | ".join(f"{n}={f:.4f}" for n, f in zip(LABELS, per_cls))
-            print(f"  >> {parts}")
-
-        if no_improve >= EARLY_STOP_PATIENCE:
+        if val_loader and no_improve >= EARLY_STOP_PATIENCE:
             print(f"[EarlyStop] 停止于 epoch {epoch}")
             break
 
     print(f"\n最佳 Macro F1: {best_f1:.4f} @ epoch {best_epoch}")
 
-    # ── 最终验证（EMA 模型）──
-    if ema:
+    # ── 最终保存 ──
+    if val_loader is not None and ema:
         ema.apply()
         print("\n[EMA] 最终验证:")
         final_m = validate(model, val_loader, criterion)
-        print(
-            f"  Macro F1: {final_m['val_macro_f1']:.4f}  "
-            f"Acc: {final_m['val_acc']:.4f}"
-        )
-        # 保存 EMA 权重
+        print(f"  Macro F1: {final_m['val_macro_f1']:.4f}  Acc: {final_m['val_acc']:.4f}")
         save_final(model, suffix="_ema")
         ema.restore()
 
-    # 保存原始最优权重
     save_final(model, suffix="")
-
     return model
 
 

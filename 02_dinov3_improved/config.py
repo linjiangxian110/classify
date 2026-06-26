@@ -10,8 +10,9 @@ import torch
 # ============================================================
 DATA_DIR = "/mnt/data/lck/code/classify/train"
 PRETRAIN_PATH = "/mnt/data/lck/code/classify/dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth"
-CHECKPOINT_DIR = "./checkpoints"
-RESULT_DIR = "./results"
+EXP_NAME = os.environ.get("WEATHER_EXP_NAME", "default")
+CHECKPOINT_DIR = f"./checkpoints/{EXP_NAME}"
+RESULT_DIR = f"./results/{EXP_NAME}"
 
 # dinov3 源码路径（相对于本文件）
 _DINOV3_SRC = os.path.join(os.path.dirname(__file__), "..", "Weather", "dinov3-main")
@@ -37,7 +38,7 @@ LR = 3e-4                           # ViT 比 CNN 敏感，用更低 LR
 LR_MIN = 1e-6
 WEIGHT_DECAY = 0.05                 # ViT 需要更强的 weight decay
 WARMUP_EPOCHS = 2
-VAL_RATIO = 0.15
+VAL_RATIO = float(os.environ.get("WEATHER_VAL_RATIO", "0.15"))
 SEED = 42
 
 # ============================================================
