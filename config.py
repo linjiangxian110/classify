@@ -39,8 +39,8 @@ ID2LABEL = {idx: name for idx, name in enumerate(LABELS)}
 # ============================================================
 # 图像预处理
 # ============================================================
-IMG_SIZE = 320              # 最终输入尺寸
-RESIZE_VAL = 352            # 验证/推理时的 resize 尺寸
+IMG_SIZE = 224              # 最终输入尺寸
+RESIZE_VAL = 256            # 验证/推理时的 resize 尺寸
 
 # ImageNet 标准均值和标准差
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
@@ -49,9 +49,9 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 # ============================================================
 # 训练超参数
 # ============================================================
-BATCH_SIZE = 24
+BATCH_SIZE = 32
 EPOCHS = 50
-LR = 1e-3
+LR = 5e-4
 LR_MIN = 1e-6               # cosine scheduler 最低学习率
 WEIGHT_DECAY = 1e-4
 WARMUP_EPOCHS = 2           # 预热轮数
@@ -73,7 +73,7 @@ CLASS_WEIGHTS_MANUAL = [1.0, 2.5, 2.5, 1.0]  # rainy/snowy 加权
 USE_BALANCED_SAMPLER = False
 
 # Label Smoothing — 防止小类过拟合
-LABEL_SMOOTHING = 0.1
+LABEL_SMOOTHING = 0.0
 
 # RandAugment — 真正的数据增强（非重复采样）
 # num_ops=2, magnitude=9 (0-31, 9 为轻量级别)
