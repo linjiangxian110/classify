@@ -1,7 +1,7 @@
 # 忽略训练数据目录
+# 训练数据
 train/
-
-# 如果 train.zip 也不想传，顺手一起忽略
+train.zip
 
 # Python 缓存
 __pycache__/
@@ -17,9 +17,29 @@ __pycache__/
 venv/
 env/
 
-# 常见模型权重和日志（可按需保留）
+# 模型权重
 *.pth
 *.pt
+!requirements.txt
+
+# 输出目录
 logs/
 outputs/
 checkpoints/
+results/
+
+# MO 平台杂项（Weather 保留作参考，不提交无关文件）
+*.zip
+.ipynb
+.localenv/
+datasets/
+job_logs/
+figures/
+tb_results/
+answer_cell.py
+test_pretrained.py
+__pycache__/
+
+# DINOv3 预训练权重（327MB，太大了）
+dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth
+finetuned_model*.pt

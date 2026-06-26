@@ -1,0 +1,108 @@
+"""
+DINOv3 ViT-B/16 + GeM Pooling + CLS Concat 分类头
+改进：DropPath 正则化 + EMA
+"""
+import copy
+import torch
+import torch.nn as nn
+from dinov3.hub.backbones import dinov3_vitb16
+from config import (
+    NUM_CLASSES, EMBED_DIM, HIDDEN_DIM,
+    DROPOUT, DROP_PATH_RATE,
+)
+
+
+class GeMPool(nn.Module):
+    """Generalized Mean Pooling (p=3)"""
+    def __init__(self, p=3, eps=1e-6):
+        super().__init__()
+        self.p = nn.Parameter(torch.ones(1) * p)
+        self.eps = eps
+
+    def forward(self, x):
+        return x.clamp(min=self.eps).pow(self.p).mean(dim=1).pow(1.0 / self.p)
+
+
+class DINOv3Classifier(nn.Module):
+    """
+    DINOv3 ViT-B/16 + CLS+GeM 天气分类模型。
+    前向返回 logits。
+    """
+
+    def __init__(self, pretrained_path=None, drop_path_rate=DROP_PATH_RATE):
+        super().__init__()
+
+        # ── Backbone ──
+        self.backbone = dinov3_vitb16(
+            pretrained=False,   # 我们手动加载权重
+            drop_path_rate=drop_path_rate,
+        )
+        if pretrained_path:
+            print(f"[Model] 加载预训练权重: {pretrained_path}")
+            state = torch.load(pretrained_path, map_location="cpu")
+            # dinov3_vitb16 预训练权重通常是完整 model state
+            if "backbone_state_dict" in state:
+                self.backbone.load_state_dict(state["backbone_state_dict"])
+            elif "teacher" in state:
+                self.backbone.load_state_dict(state["teacher"], strict=False)
+            else:
+                self.backbone.load_state_dict(state, strict=False)
+
+        # ── GeM Pooling ──
+        self.gem_pool = GeMPool()
+
+        # ── 分类头 ──
+        self.classifier = nn.Sequential(
+            nn.Dropout(DROPOUT),
+            nn.Linear(HIDDEN_DIM, NUM_CLASSES),
+        )
+
+        # ── 统计 ──
+        total = sum(p.numel() for p in self.parameters())
+        trainable = sum(p.numel() for p in self.parameters() if p.requires_grad)
+        print(f"[Model] 总参数: {total/1e6:.1f}M  可训练: {trainable/1e6:.1f}M")
+        print(f"[Model] DropPath={drop_path_rate}  Dropout={DROPOUT}")
+
+    def forward(self, x):
+        feat = self.backbone.forward_features(x)
+        cls_token = feat["x_norm_clstoken"]            # [B, 768]
+        patch_gem = self.gem_pool(feat["x_norm_patchtokens"])  # [B, 768]
+        fused = torch.cat([cls_token, patch_gem], dim=1)       # [B, 1536]
+        return self.classifier(fused)
+
+
+class EMAModel:
+    """
+    指数移动平均包装器。
+    用法:
+        ema = EMAModel(model, decay=0.999)
+        for step in ...:
+            ...训练...
+            ema.update()
+        ema.apply()  # 推理前执行
+    """
+
+    def __init__(self, model, decay=0.999):
+        self.model = model
+        self.decay = decay
+        self.shadow = {k: v.clone().detach() for k, v in model.state_dict().items()}
+        self._backup = {}
+
+    def update(self):
+        with torch.no_grad():
+            for k, param in self.model.state_dict().items():
+                if param.dtype.is_floating_point:
+                    self.shadow[k].mul_(self.decay).add_(
+                        param.detach(), alpha=1 - self.decay
+                    )
+                else:
+                    self.shadow[k].copy_(param.detach())
+
+    def apply(self):
+        """用 EMA 权重替换模型权重"""
+        self._backup = {k: v.clone() for k, v in self.model.state_dict().items()}
+        self.model.load_state_dict(self.shadow)
+
+    def restore(self):
+        """恢复原始权重"""
+        self.model.load_state_dict(self._backup)
