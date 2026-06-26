@@ -50,7 +50,7 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 # 训练超参数
 # ============================================================
 BATCH_SIZE = 32
-EPOCHS = 30
+EPOCHS = 50
 LR = 1e-3
 LR_MIN = 1e-6               # cosine scheduler 最低学习率
 WEIGHT_DECAY = 1e-4
@@ -73,12 +73,12 @@ CLASS_WEIGHTS_MANUAL = [1.0, 2.5, 2.5, 1.0]  # rainy/snowy 加权
 USE_BALANCED_SAMPLER = False
 
 # Label Smoothing — 防止小类过拟合
-LABEL_SMOOTHING = 0.0
+LABEL_SMOOTHING = 0.1
 
 # RandAugment — 真正的数据增强（非重复采样）
-# num_ops=2, magnitude=9 (0-31, 9 为轻量级别)
+# num_ops=2, magnitude=7 (0-31, 7 为保守级别，适合小数据集)
 RANDAUG_N = 2
-RANDAUG_M = 9
+RANDAUG_M = 7
 
 # ============================================================
 # 优化器与调度器
