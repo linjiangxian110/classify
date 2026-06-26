@@ -24,7 +24,7 @@ LOG_DIR = "./logs"
 # 模型配置
 # ============================================================
 # 可选: efficientnet_b0 / resnet18 / mobilenetv3_large_100 / convnext_tiny
-MODEL_NAME = "convnext_tiny"
+MODEL_NAME = "efficientnet_b1"
 NUM_CLASSES = 4
 PRETRAINED = True          # 使用 ImageNet 预训练权重
 FREEZE_BACKBONE = False    # False = 全模型微调；True = 只训分类头
@@ -39,8 +39,8 @@ ID2LABEL = {idx: name for idx, name in enumerate(LABELS)}
 # ============================================================
 # 图像预处理
 # ============================================================
-IMG_SIZE = 224              # 最终输入尺寸
-RESIZE_VAL = 256            # 验证/推理时的 resize 尺寸
+IMG_SIZE = 240              # 最终输入尺寸（B1 原生尺寸）
+RESIZE_VAL = 272            # 验证/推理时的 resize 尺寸
 
 # ImageNet 标准均值和标准差
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
@@ -50,14 +50,14 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 # 训练超参数
 # ============================================================
 BATCH_SIZE = 32
-EPOCHS = 50
-LR = 5e-4
+EPOCHS = 30
+LR = 1e-3
 LR_MIN = 1e-6               # cosine scheduler 最低学习率
 WEIGHT_DECAY = 1e-4
 WARMUP_EPOCHS = 2           # 预热轮数
 
 # 验证集比例
-VAL_RATIO = 0.15
+VAL_RATIO = 0.30
 # 随机种子
 SEED = 42
 
