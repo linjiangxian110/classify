@@ -11,20 +11,17 @@ from config import (
     DATA_DIR, IMG_SIZE, RESIZE_VAL, BATCH_SIZE,
     IMAGENET_MEAN, IMAGENET_STD, VAL_RATIO, SEED,
     NUM_CLASSES, USE_BALANCED_SAMPLER,
-    RANDAUG_N, RANDAUG_M,
 )
 
 
 def get_train_transforms():
-    """
-    训练增强：随机裁剪 + 水平翻转 + RandAugment
-    RandAugment 每次随机组合 N 种变换，同一张图每个 epoch 看到不同面貌
-    rainy/snowy 等效数据量翻倍，但不重复采样，不会过拟合
-    """
+    """训练增强：随机裁剪 + 水平翻转 + 轻量颜色抖动"""
     return transforms.Compose([
         transforms.RandomResizedCrop(IMG_SIZE, scale=(0.7, 1.0)),
         transforms.RandomHorizontalFlip(p=0.5),
-        transforms.RandAugment(num_ops=RANDAUG_N, magnitude=RANDAUG_M),
+        transforms.ColorJitter(
+            brightness=0.1, contrast=0.1, saturation=0.1
+        ),
         transforms.ToTensor(),
         transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
     ])
