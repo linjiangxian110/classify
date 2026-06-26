@@ -17,6 +17,16 @@ SUPPORTED_MODELS = {
         "family": "EfficientNet",
         "params_m": 7.8,
     },
+    "efficientnet_b2": {
+        "input_size": 260,
+        "family": "EfficientNet",
+        "params_m": 9.1,
+    },
+    "efficientnet_b3": {
+        "input_size": 300,
+        "family": "EfficientNet",
+        "params_m": 12.2,
+    },
     "resnet18": {
         "input_size": 224,
         "family": "ResNet",

@@ -91,6 +91,8 @@ def train():
     print(f"\n{'='*55}")
     print(f"  天气识别训练 — {MODEL_NAME}")
     print(f"  设备: {DEVICE}")
+    print(f"  输入: {IMG_SIZE}×{IMG_SIZE}")
+    print(f"  Epochs: {EPOCHS}  LR: {LR}")
     print(f"{'='*55}\n")
 
     # ── 1. 数据 ──
