@@ -10,7 +10,7 @@ import os
 # 本地路径（Windows）
 DATA_DIR_LOCAL = r"D:\Temporary\文档\智海调优\天气识别\train"
 # 服务器路径（Linux），训练时用这个
-DATA_DIR_SERVER = "/home/jovyan/work/datasets/6a39ed934d7b489daf5f80a4-momodel/train"
+DATA_DIR_SERVER = "/mnt/data/lck/code/classify/train"
 
 # 自动检测：如果本地路径存在就用本地，否则用服务器路径
 DATA_DIR = DATA_DIR_LOCAL if os.path.exists(DATA_DIR_LOCAL) else DATA_DIR_SERVER
