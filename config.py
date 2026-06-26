@@ -50,7 +50,7 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 # 训练超参数
 # ============================================================
 BATCH_SIZE = 32
-EPOCHS = 30
+EPOCHS = 50
 LR = 1e-3
 LR_MIN = 1e-6               # cosine scheduler 最低学习率
 WEIGHT_DECAY = 1e-4
@@ -68,6 +68,12 @@ SEED = 42
 # False = 使用下方手动指定的 CLASS_WEIGHTS_MANUAL
 USE_CLASS_WEIGHTS = True
 CLASS_WEIGHTS_MANUAL = [1.0, 2.5, 2.5, 1.0]  # rainy/snowy 加权
+
+# 均衡采样（WeightedRandomSampler）— 每个 batch 强制四类均衡
+USE_BALANCED_SAMPLER = True
+
+# Label Smoothing — 防止小类过拟合
+LABEL_SMOOTHING = 0.1
 
 # ============================================================
 # 优化器与调度器

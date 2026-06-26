@@ -3,14 +3,14 @@
 """
 import os
 import torch
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, random_split, WeightedRandomSampler
 from torchvision import datasets, transforms
 from sklearn.model_selection import StratifiedShuffleSplit
 import numpy as np
 from config import (
     DATA_DIR, IMG_SIZE, RESIZE_VAL, BATCH_SIZE,
     IMAGENET_MEAN, IMAGENET_STD, VAL_RATIO, SEED,
-    NUM_CLASSES,
+    NUM_CLASSES, USE_BALANCED_SAMPLER,
 )
 
 
@@ -89,10 +89,31 @@ def build_loaders(data_dir=None, batch_size=None, val_ratio=None,
 
     print(f"[Data] 训练集: {n_train} 张  |  验证集: {n_val} 张")
 
-    train_loader = DataLoader(
-        train_set, batch_size=batch_size, shuffle=True,
-        num_workers=0, pin_memory=True,
-    )
+    # ── 构建训练 DataLoader ──
+    if USE_BALANCED_SAMPLER:
+        # 获取训练集中每个样本的标签
+        train_targets = [full_train_set.targets[i] for i in train_indices]
+        class_counts = np.bincount(train_targets, minlength=NUM_CLASSES)
+        # 每类权重 = 1/该类样本数，样本被采样概率反比于类别频率
+        class_weights_sampler = 1.0 / class_counts
+        sample_weights = class_weights_sampler[train_targets]
+        sampler = WeightedRandomSampler(
+            weights=sample_weights,
+            num_samples=len(train_targets),
+            replacement=True,
+        )
+        train_loader = DataLoader(
+            train_set, batch_size=batch_size,
+            sampler=sampler,
+            num_workers=0, pin_memory=True,
+        )
+        print(f"[Data] 使用 WeightedRandomSampler（均衡采样）")
+    else:
+        train_loader = DataLoader(
+            train_set, batch_size=batch_size, shuffle=True,
+            num_workers=0, pin_memory=True,
+        )
+
     val_loader = DataLoader(
         val_set, batch_size=batch_size, shuffle=False,
         num_workers=0, pin_memory=True,

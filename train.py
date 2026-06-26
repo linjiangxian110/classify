@@ -15,6 +15,7 @@ from config import (
     USE_CLASS_WEIGHTS, DEVICE, LABELS,
     EARLY_STOP_PATIENCE, MONITOR_METRIC,
     LR_SCHEDULER, RESULT_DIR, SEED,
+    LABEL_SMOOTHING,
 )
 from model_zoo import create_model
 from dataset import (
@@ -103,9 +104,14 @@ def train():
     # ── 3. Loss（类别权重处理不均衡）──
     if USE_CLASS_WEIGHTS:
         class_weights = compute_class_weights().to(DEVICE)
-        criterion = nn.CrossEntropyLoss(weight=class_weights)
+        criterion = nn.CrossEntropyLoss(
+            weight=class_weights,
+            label_smoothing=LABEL_SMOOTHING,
+        )
     else:
-        criterion = nn.CrossEntropyLoss()
+        criterion = nn.CrossEntropyLoss(
+            label_smoothing=LABEL_SMOOTHING,
+        )
 
     # ── 4. 优化器 + 调度器 ──
     optimizer = build_optimizer(model)
