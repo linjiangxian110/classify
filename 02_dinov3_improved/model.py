@@ -3,6 +3,14 @@ DINOv3 ViT-B/16 + GeM Pooling + CLS Concat 分类头
 改进：DropPath 正则化 + EMA
 """
 import copy
+import os
+import sys
+
+# 先加路径再 import dinov3
+_DINOV3 = os.path.join(os.path.dirname(__file__), "..", "Weather", "dinov3-main")
+if _DINOV3 not in sys.path:
+    sys.path.insert(0, _DINOV3)
+
 import torch
 import torch.nn as nn
 from dinov3.hub.backbones import dinov3_vitb16
