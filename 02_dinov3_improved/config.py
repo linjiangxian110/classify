@@ -9,7 +9,8 @@ import torch
 # 路径
 # ============================================================
 DATA_DIR = "/mnt/data/lck/code/classify/train"
-PRETRAIN_PATH = "/mnt/data/lck/code/classify/finetuned_model_a100_full.pt"
+PRETRAIN_PATH = os.environ.get("WEATHER_PRETRAIN",
+    "/mnt/data/lck/code/classify/finetuned_model_a100_full.pt")
 EXP_NAME = os.environ.get("WEATHER_EXP_NAME", "default")
 CHECKPOINT_DIR = f"./checkpoints/{EXP_NAME}"
 RESULT_DIR = f"./results/{EXP_NAME}"
@@ -49,7 +50,7 @@ LABEL_SMOOTHING = 0.0               # 先关闭，后续逐步加
 DROPOUT = 0.2                       # 分类头 dropout
 DROP_PATH_RATE = 0.1                # Step 2：加 stochastic depth
 MIXUP_ALPHA = 0.0                   # 先关闭（天气分类对混合敏感）
-EMA_DECAY = 0.0                     # 先关闭
+EMA_DECAY = 0.999                   # Step 3：加指数移动平均
 
 # ============================================================
 # 图像预处理
