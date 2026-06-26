@@ -57,7 +57,7 @@ WEIGHT_DECAY = 1e-4
 WARMUP_EPOCHS = 2           # 预热轮数
 
 # 验证集比例
-VAL_RATIO = 0.30
+VAL_RATIO = 0.15
 # 随机种子
 SEED = 42
 
