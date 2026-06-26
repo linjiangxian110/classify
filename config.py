@@ -24,7 +24,7 @@ LOG_DIR = "./logs"
 # 模型配置
 # ============================================================
 # 可选: efficientnet_b0 / resnet18 / mobilenetv3_large_100 / convnext_tiny
-MODEL_NAME = "efficientnet_b0"
+MODEL_NAME = "convnext_tiny"
 NUM_CLASSES = 4
 PRETRAINED = True          # 使用 ImageNet 预训练权重
 FREEZE_BACKBONE = False    # False = 全模型微调；True = 只训分类头
@@ -39,8 +39,8 @@ ID2LABEL = {idx: name for idx, name in enumerate(LABELS)}
 # ============================================================
 # 图像预处理
 # ============================================================
-IMG_SIZE = 224              # 最终输入尺寸
-RESIZE_VAL = 256            # 验证/推理时的 resize 尺寸
+IMG_SIZE = 320              # 最终输入尺寸
+RESIZE_VAL = 352            # 验证/推理时的 resize 尺寸
 
 # ImageNet 标准均值和标准差
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
@@ -49,7 +49,7 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 # ============================================================
 # 训练超参数
 # ============================================================
-BATCH_SIZE = 32
+BATCH_SIZE = 24
 EPOCHS = 50
 LR = 1e-3
 LR_MIN = 1e-6               # cosine scheduler 最低学习率
@@ -69,11 +69,16 @@ SEED = 42
 USE_CLASS_WEIGHTS = True
 CLASS_WEIGHTS_MANUAL = [1.0, 2.5, 2.5, 1.0]  # rainy/snowy 加权
 
-# 均衡采样（WeightedRandomSampler）— 每个 batch 强制四类均衡
-USE_BALANCED_SAMPLER = True
+# 均衡采样（WeightedRandomSampler）— exp_002 验证已关
+USE_BALANCED_SAMPLER = False
 
 # Label Smoothing — 防止小类过拟合
 LABEL_SMOOTHING = 0.1
+
+# RandAugment — 真正的数据增强（非重复采样）
+# num_ops=2, magnitude=9 (0-31, 9 为轻量级别)
+RANDAUG_N = 2
+RANDAUG_M = 9
 
 # ============================================================
 # 优化器与调度器
