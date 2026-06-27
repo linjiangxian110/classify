@@ -34,7 +34,7 @@ HIDDEN_DIM = 2 * EMBED_DIM          # CLS + GeM concat → 1536
 # 训练
 # ============================================================
 BATCH_SIZE = 16                      # ViT + 384px 显存占用大
-EPOCHS = 20                        # 数据扩充后多训几轮
+EPOCHS = 20                        # 默认 20，可通过环境变量覆盖
 LR = 1e-4                          # 微调用低 LR
 LR_MIN = 1e-6
 WEIGHT_DECAY = 0.05
@@ -46,7 +46,7 @@ EARLY_STOP_PATIENCE = 7             # 20 轮微调，7 轮不涨就停
 # ============================================================
 # 改进：正则化
 # ============================================================
-LABEL_SMOOTHING = 0.0               # 先关闭，后续逐步加
+LABEL_SMOOTHING = float(os.environ.get("WEATHER_LABEL_SMOOTH", "0.0"))
 DROPOUT = 0.2                       # 分类头 dropout
 DROP_PATH_RATE = 0.1                # Step 2：加 stochastic depth
 MIXUP_ALPHA = 0.0                   # 先关闭（天气分类对混合敏感）
